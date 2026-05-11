@@ -141,6 +141,10 @@ typedef enum {
                                        @"xterm-new",
                                        @"xterm-256color",
                                        @"xterm+256color",
+                                       @"xterm-direct",
+                                       @"xterm-direct2",
+                                       @"xterm-direct16",
+                                       @"xterm-direct256",
                                        @"xterm-kitty",
                                        @"iterm",
                                        @"iterm2" ]];
