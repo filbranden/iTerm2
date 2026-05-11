@@ -39,10 +39,20 @@ done
 
 # Regenerate xterm-direct-terminfo if Homebrew ncurses is available;
 # otherwise the checked-in copy (last produced by this same loop) is used.
+#
+# Cap colors and pairs to fit in a 16-bit signed int so tic emits the legacy
+# binary format (magic 0x011A) instead of the extended-32 format (0x021E)
+# introduced in ncurses 6.1. macOS's bundled ncurses 5.4 (used by /bin/zsh
+# among others) cannot read the extended format and falls back to a degraded
+# state where backspace doesn't redraw correctly. Direct-color-aware programs
+# detect 24-bit support via the RGB boolean cap, not via the colors number,
+# so capping the cap (sic) doesn't lose anything functional.
 if [[ -n "$HOMEBREW_NCURSES_INFOCMP" ]]; then
   cat /dev/null > Resources/xterm-direct-terminfo
   for term in "${direct_terms[@]}"; do
-    "$HOMEBREW_NCURSES_INFOCMP" -x "$term" >> Resources/xterm-direct-terminfo
+    "$HOMEBREW_NCURSES_INFOCMP" -x "$term" \
+      | sed -e 's/colors#0x1000000/colors#0x100/g' -e 's/pairs#0x10000/pairs#0x7fff/g' \
+      >> Resources/xterm-direct-terminfo
     perl -pi -e 'chomp if eof' Resources/xterm-direct-terminfo
     cat Resources/xterm-terminfo-additions >> Resources/xterm-direct-terminfo
   done
